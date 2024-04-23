@@ -16,15 +16,18 @@
   <widget class="QWidget" name="centralwidget">
    <property name="geometry">
     <rect>
-     <x>131</x>
-     <y>80</y>
-     <width>121</width>
-     <height>131</height>
+     <x>31</x>
+     <y>50</y>
+     <width>331</width>
+     <height>201</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QLabel" name="percentageLabel">
+      <property name="styleSheet">
+       <string notr="true">font: 12pt &quot;Cantarell&quot;;</string>
+      </property>
       <property name="text">
        <string>Percentage:</string>
       </property>
@@ -35,6 +38,9 @@
     </item>
     <item>
      <widget class="QLabel" name="severityLabel">
+      <property name="styleSheet">
+       <string notr="true">font: 12pt &quot;Cantarell&quot;;</string>
+      </property>
       <property name="text">
        <string>Severity:</string>
       </property>
@@ -45,6 +51,9 @@
     </item>
     <item>
      <widget class="QPushButton" name="closeButton">
+      <property name="styleSheet">
+       <string notr="true">font: 12pt &quot;Cantarell&quot;;</string>
+      </property>
       <property name="text">
        <string>Close</string>
       </property>
