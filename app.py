@@ -6,13 +6,28 @@ from datetime import datetime, timedelta
 import random
 from PyQt5.QtCore import QTimer
 
+class NameDialog(QDialog):
+    def __init__(self, parent=None):
+        super(NameDialog, self).__init__(parent)
+        loadUi("name.ui", self)
+        self.askName.clicked.connect(self.goToTest)
+
+    def goToTest(self):
+        name = self.nameinput.text()
+        if name.strip() == "":
+            QMessageBox.warning(self, "Missing Information", "Please enter your name.")
+        else:
+            self.close()
+            mainWindow.takeTest(name)
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         loadUi("main.ui", self)
         self.saveChanges.clicked.connect(self.saveData)
         self.calendarWidget.clicked.connect(self.updatePlaceholders)
-        self.takeTestButton.clicked.connect(self.takeTest)
+        self.takeTestButton.clicked.connect(self.showNameDialog)
         
         self.prev_name = ""
         self.prev_age = ""
@@ -70,14 +85,18 @@ class MainWindow(QMainWindow):
 
         QMessageBox.information(self, "Success", "Details Saved Successfully!!")
 
-    def takeTest(self):
+    def showNameDialog(self):
+        nameDialog = NameDialog(self)
+        nameDialog.exec_()
+
+    def takeTest(self, name):
         self.centralwidget.hide()
         
         if not self.test_interface:
             self.test_interface = loadUi("test_interface.ui", self)
 
         self.test_interface.show()
-        self.submitButton.clicked.connect(self.submitAnswers)
+        self.submitButton.clicked.connect(lambda: self.submitAnswers(name))
         
         start_date = self.starting_date.date().toPyDate()
         end_date = self.ending_date.date().toPyDate()
@@ -94,11 +113,11 @@ class MainWindow(QMainWindow):
         minutes = seconds // 60
         seconds %= 60
     
-    def submitAnswers(self):
+    def submitAnswers(self, name):
         test_ans = []
 
         print("Answers submitted:")
-
+        
         test_ans.append(self.test_interface.lineEdit_Q1.text())
         test_ans.append(self.test_interface.lineEdit_Q2.text())
         test_ans.append(self.test_interface.lineEdit_Q3.text())
@@ -108,8 +127,9 @@ class MainWindow(QMainWindow):
         QMessageBox.information(self, "Answers Submitted", "Your answers have been submitted.")
         self.test_interface.close()
         selected_date = self.test_interface.testDate.text()
-        print(selected_date)
-        query_result = self.collection.find_one({"date": selected_date})
+        print("User :", name)
+        print("Date for the test :",selected_date)
+        query_result = self.collection.find_one({"$and": [{"name": name, "date" : selected_date}]})
         print(query_result)
         if query_result:
             db_values = [query_result["people_met"], query_result["foods_eaten"], 
@@ -117,10 +137,10 @@ class MainWindow(QMainWindow):
                          query_result["anniversaries"]]
            
             correct_count = sum(1 for test, db_value in zip(test_ans, db_values) if test == db_value)
-            print("Number of correct answers:", correct_count)
+            print("Number of correct answers :", correct_count)
 
             percentage_correct = (correct_count / len(test_ans)) * 100
-            print("Percentage of correct answers:", percentage_correct)
+            print("Percentage of correct answers :", percentage_correct)
 
             if correct_count >= 4:
                 severity = "Mildly Affected to Alzheimer"
@@ -128,7 +148,7 @@ class MainWindow(QMainWindow):
                 severity = "Moderately Affected to Alzheimer"
             else:
                 severity = "Severely Affected to Alzheimer"
-            print("Severity of Alzheimer's:", severity)
+            print("Severity of Alzheimer's :", severity)
             self.showResults(severity, percentage_correct)
         else:
             print("No data found for the selected date.")
